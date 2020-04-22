@@ -6,14 +6,12 @@ import {
   createHolochainProvider,
 } from '@uprtcl/holochain-provider';
 
-import { MyTransactions } from './elements/hcmc-my-transactions';
-
 import en from './i18n/en.json';
-import { mutualCreditTypeDefs } from './graphql/schema';
 import { ProfilesBindings } from './bindings';
+import { profilesTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 
-export class ProfileModule extends MicroModule {
+export class ProfilesModule extends MicroModule {
   static id = Symbol('holochain-profile-module');
 
   dependencies = [HolochainConnectionModule.id];
@@ -28,14 +26,12 @@ export class ProfileModule extends MicroModule {
     const profilesProvider = createHolochainProvider(this.instance, 'profiles');
 
     container.bind(ProfilesBindings.ProfilesProvider).to(profilesProvider);
-
-    customElements.define('hcmc-my-transactions', MyTransactions);
   }
 
   get submodules() {
     return [
-      new GraphQlSchemaModule(mutualCreditTypeDefs, resolvers),
-      new i18nextModule('mutual-credit', { en: en }),
+      new GraphQlSchemaModule(profilesTypeDefs, resolvers),
+      new i18nextModule('profiles', { en: en }),
     ];
   }
 }

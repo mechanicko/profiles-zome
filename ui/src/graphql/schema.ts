@@ -1,44 +1,18 @@
 import gql from 'graphql-tag';
 
-export const mutualCreditTypeDefs = gql`
-  scalar Date
+export const profilesTypeDefs = gql`
 
   type Agent {
     id: ID!
-  }
-
-  enum TransactionState {
-    RECEIVED
-    PENDING
-    DECLINED
-    APPROVED
-    COMPLETED
-  }
-
-  type Transaction {
-    id: ID!
-
-    debtor: Agent!
-    creditor: Agent!
-    amount: Int!
-    timestamp: Date!
-
-    executable: Boolean!
-    counterpartyBalance: Float!
-    valid: Boolean!
-
-    state: TransactionState!
+    username: String!
   }
 
   extend type Query {
-    myTransactions: [Transaction!]!
-    myOffers: [Transaction!]!
-    myBalance: Float!
+    allAgents: [Agent!]!
+    me: Agent!
   }
 
   extend type Mutation {
-    offerCredits(creditorId: ID!, amount: Float!): Transaction!
-    declineOffer(transactionId: ID!): ID!
-    acceptOffer(transactionId: ID!): ID!
+    setMyUsername(username: String!): Agent!
   }
 `;

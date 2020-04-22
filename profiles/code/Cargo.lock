@@ -1005,6 +1005,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "profiles"
+version = "0.1.0"
+dependencies = [
+ "hdk",
+ "hdk_proc_macros",
+ "holochain_entry_utils",
+ "holochain_json_derive 0.0.23",
+ "holochain_wasm_utils",
+ "serde",
+ "serde_derive",
+ "serde_json",
+]
+
+[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1364,20 +1378,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87c5890a989fa47ecdc7bcb4c63a77a82c18f306714104b1decfd722db17b39e"
 dependencies = [
  "serde",
-]
-
-[[package]]
-name = "transactor"
-version = "0.1.0"
-dependencies = [
- "hdk",
- "hdk_proc_macros",
- "holochain_entry_utils",
- "holochain_json_derive 0.0.30",
- "holochain_wasm_utils",
- "serde",
- "serde_derive",
- "serde_json",
 ]
 
 [[package]]
