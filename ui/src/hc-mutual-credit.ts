@@ -1,1 +1,1 @@
-export { MutualCreditModule } from './mutual-credit.module';
+export { ProfilesModule } from './profiles.module';

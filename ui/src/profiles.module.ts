@@ -10,29 +10,24 @@ import { MyTransactions } from './elements/hcmc-my-transactions';
 
 import en from './i18n/en.json';
 import { mutualCreditTypeDefs } from './graphql/schema';
-import { MutualCreditBindings } from './bindings';
+import { ProfilesBindings } from './bindings';
 import { resolvers } from './graphql/resolvers';
 
-export class ProfilesModule extends MicroModule {
-  static id = Symbol('holochain-profiles-module');
+export class ProfileModule extends MicroModule {
+  static id = Symbol('holochain-profile-module');
 
   dependencies = [HolochainConnectionModule.id];
-  
-  static bindings = MutualCreditBindings;
+
+  static bindings = ProfilesBindings;
 
   constructor(protected instance: string) {
     super();
   }
 
   async onLoad(container: interfaces.Container) {
-    const profilesProvider = createHolochainProvider(
-      this.instance,
-      'profile'
-    );
+    const profilesProvider = createHolochainProvider(this.instance, 'profiles');
 
-    container
-      .bind(MutualCreditBindings.MutualCreditProvider)
-      .to(mutualCreditProvider);
+    container.bind(ProfilesBindings.ProfilesProvider).to(profilesProvider);
 
     customElements.define('hcmc-my-transactions', MyTransactions);
   }
