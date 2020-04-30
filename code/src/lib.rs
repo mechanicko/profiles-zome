@@ -84,8 +84,10 @@ mod profile_zome {
 
     /** Temporary Guillem solution **/
     #[zome_fn("hc_public")]
-    fn set_username(username: String) -> ZomeApiResult<()> {
-        username_mod::set_username(username)
+    fn set_username(username: String) -> ZomeApiResult<Address> {
+        username_mod::set_username(username)?;
+
+        Ok(hdk::AGENT_ADDRESS.clone())
     }
 
     #[zome_fn("hc_public")]

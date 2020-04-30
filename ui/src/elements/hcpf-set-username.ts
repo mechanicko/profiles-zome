@@ -20,9 +20,10 @@ export class SetUsername extends moduleConnect(LitElement) {
     this.client = this.request(ApolloClientModule.bindings.Client);
 
     this.usernameField.validityTransform = (newValue) => {
-      if (newValue.length >= this.usernameMinLength) {
+      this.requestUpdate();
+      if (newValue.length < this.usernameMinLength) {
         this.usernameField.setCustomValidity(
-          `Username is too shot, min. ${this.usernameField} characters`
+          `Username is too shot, min. ${this.usernameMinLength} characters`
         );
         return {
           valid: false,
@@ -65,7 +66,7 @@ export class SetUsername extends moduleConnect(LitElement) {
           @input=${() => this.usernameField.reportValidity()}
         ></mwc-textfield>
         <mwc-button
-          .disabled=${this.usernameField.validity.valid}
+          .disabled=${!this.usernameField || !this.usernameField.validity.valid}
           label="SET USERNAME"
           @click=${() => this.setUsername()}
         ></mwc-button>
