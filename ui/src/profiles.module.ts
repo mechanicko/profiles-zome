@@ -10,6 +10,7 @@ import en from './i18n/en.json';
 import { ProfilesBindings } from './bindings';
 import { profilesTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
+import { SetUsername } from './elements/hcpf-set-username';
 
 export class ProfilesModule extends MicroModule {
   static id = Symbol('holochain-profile-module');
@@ -26,6 +27,8 @@ export class ProfilesModule extends MicroModule {
     const profilesProvider = createHolochainProvider(this.instance, 'profiles');
 
     container.bind(ProfilesBindings.ProfilesProvider).to(profilesProvider);
+
+    customElements.define('hcpf-set-username', SetUsername);
   }
 
   get submodules() {

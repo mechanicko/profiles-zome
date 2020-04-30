@@ -10,7 +10,10 @@ export const resolvers = {
       );
 
       const allAgents = await profilesProvider.call('get_all_agents', {});
-      return allAgents.map(agent => ({ id: agent.agent_id, username: agent.username }))
+      return allAgents.map((agent) => ({
+        id: agent.agent_id,
+        username: agent.username,
+      }));
     },
     async me(_, __, { container }) {
       const profilesProvider: HolochainProvider = container.get(
@@ -18,7 +21,7 @@ export const resolvers = {
       );
 
       return profilesProvider.call('get_my_address', {});
-    }
+    },
   },
   Agent: {
     id(parent) {
@@ -30,7 +33,7 @@ export const resolvers = {
       );
 
       return profilesProvider.call('get_username', { agent_address: parent });
-    }
+    },
   },
   Mutation: {
     async setUsername(_, { username }, { container }) {
@@ -39,6 +42,6 @@ export const resolvers = {
       );
 
       return profilesProvider.call('set_username', { username });
-    }
+    },
   },
 };

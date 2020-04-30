@@ -1,7 +1,6 @@
 import gql from 'graphql-tag';
 
 export const profilesTypeDefs = gql`
-
   type Agent {
     id: ID!
     username: String!
