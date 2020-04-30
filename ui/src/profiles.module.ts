@@ -13,7 +13,7 @@ import { resolvers } from './graphql/resolvers';
 import { SetUsername } from './elements/hcpf-set-username';
 
 export class ProfilesModule extends MicroModule {
-  static id = Symbol('holochain-profile-module');
+  static id = 'holochain-profile-module';
 
   dependencies = [HolochainConnectionModule.id];
 
