@@ -1,3 +1,3 @@
 export const ProfilesBindings = {
-  ProfilesProvider: "mutual-credit-provider"
+  ProfilesProvider: "holochain-profiles-provider"
 };

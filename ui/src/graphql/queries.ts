@@ -1,17 +1,19 @@
 import gql from 'graphql-tag';
 
-export const GET_MY_TRANSACTIONS = gql`
-  query GetMyTransactions {
-    myTransactions {
+export const SET_USERNAME = gql`
+  mutation SetUsername($username: String!) {
+    setUsername(username: $username) {
       id
-      debtor {
-        id
-      }
-      creditor {
-        id
-      }
-      amount
-      timestamp
+      username
     }
   }
 `;
+
+export const GET_ALL_AGENTS = gql`
+  query GetAllAgents {
+    allAgents {
+      id
+      username
+    }
+  }
+`

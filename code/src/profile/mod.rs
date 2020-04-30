@@ -51,8 +51,8 @@ pub struct Profile {
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
 #[serde(rename_all = "snake_case")]
 pub struct Username {
-    agent_id: Address,
-    username: String,
+    pub agent_id: Address,
+    pub username: String,
 }
 // Hashed Email
 #[derive(Serialize, Deserialize, Debug, DefaultJson, Clone)]
@@ -240,6 +240,16 @@ pub fn username_definition() -> ValidatingEntryType {
             from!(
                 holochain_anchors::ANCHOR_TYPE,
                 link_type: USERNAME_LINK_TYPE,
+                validation_package: || {
+                    hdk::ValidationPackageDefinition::Entry
+                },
+                validation: | _validation_data: hdk::LinkValidationData | {
+                    Ok(())
+                }
+            ),
+            from!(
+                "%agent_id",
+                link_type: "agent->username",
                 validation_package: || {
                     hdk::ValidationPackageDefinition::Entry
                 },

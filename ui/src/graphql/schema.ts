@@ -13,6 +13,6 @@ export const profilesTypeDefs = gql`
   }
 
   extend type Mutation {
-    setMyUsername(username: String!): Agent!
+    setUsername(username: String!): Agent!
   }
 `;
