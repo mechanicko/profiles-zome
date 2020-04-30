@@ -5,7 +5,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { TextField } from '@material/mwc-textfield';
 import '@material/mwc-button';
-import { SET_USERNAME } from 'src/graphql/queries';
+import { SET_USERNAME } from '../graphql/queries';
 
 export class SetUsername extends moduleConnect(LitElement) {
   @query('#username-field')
