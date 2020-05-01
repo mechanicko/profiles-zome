@@ -12,7 +12,7 @@ export declare class SetUsername extends SetUsername_base {
     client: ApolloClient<any>;
     firstUpdated(): void;
     static get styles(): import("lit-element").CSSResult;
-    setUsername(): void;
+    setUsername(): Promise<void>;
     render(): import("lit-element").TemplateResult;
 }
 export {};

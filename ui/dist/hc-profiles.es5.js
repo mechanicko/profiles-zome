@@ -17,7 +17,7 @@ const ProfilesBindings = {
 const profilesTypeDefs = gql `
   type Agent {
     id: ID!
-    username: String!
+    username: String
   }
 
   extend type Query {
@@ -42,24 +42,29 @@ const resolvers = {
         },
         async me(_, __, { container }) {
             const profilesProvider = container.get(ProfilesBindings.ProfilesProvider);
-            return profilesProvider.call('get_my_address', {});
+            const address = await profilesProvider.call('get_my_address', {});
+            return { id: address };
         },
     },
     Agent: {
         id(parent) {
-            return parent.id ? parent.id : parent;
+            return parent.id;
         },
         username(parent, _, { container }) {
-            if (parent.username)
-                return parent.username;
             const profilesProvider = container.get(ProfilesBindings.ProfilesProvider);
-            return profilesProvider.call('get_username', { agent_address: parent });
+            return profilesProvider.call('get_username', {
+                agent_address: parent.id,
+            });
         },
     },
     Mutation: {
         async setUsername(_, { username }, { container }) {
             const profilesProvider = container.get(ProfilesBindings.ProfilesProvider);
-            return profilesProvider.call('set_username', { username });
+            const agentId = await profilesProvider.call('set_username', { username });
+            return {
+                id: agentId,
+                username,
+            };
         },
     },
 };
@@ -139,13 +144,19 @@ class SetUsername extends moduleConnect(LitElement) {
       }
     `;
     }
-    setUsername() {
-        this.client.mutate({
+    async setUsername() {
+        const username = this.usernameField.value;
+        await this.client.mutate({
             mutation: SET_USERNAME,
             variables: {
-                username: this.usernameField.value,
+                username,
             },
         });
+        this.dispatchEvent(new CustomEvent('username-set', {
+            detail: { username },
+            bubbles: true,
+            composed: true,
+        }));
     }
     render() {
         return html `

@@ -49,13 +49,22 @@ export class SetUsername extends moduleConnect(LitElement) {
     `;
   }
 
-  setUsername() {
-    this.client.mutate({
+  async setUsername() {
+    const username = this.usernameField.value;
+    await this.client.mutate({
       mutation: SET_USERNAME,
       variables: {
-        username: this.usernameField.value,
+        username,
       },
     });
+
+    this.dispatchEvent(
+      new CustomEvent('username-set', {
+        detail: { username },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   render() {

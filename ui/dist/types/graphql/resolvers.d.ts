@@ -5,19 +5,24 @@ export declare const resolvers: {
         }): Promise<any>;
         me(_: any, __: any, { container }: {
             container: any;
-        }): Promise<any>;
+        }): Promise<{
+            id: any;
+        }>;
     };
     Agent: {
         id(parent: any): any;
         username(parent: any, _: any, { container }: {
             container: any;
-        }): any;
+        }): Promise<any>;
     };
     Mutation: {
         setUsername(_: any, { username }: {
             username: any;
         }, { container }: {
             container: any;
-        }): Promise<any>;
+        }): Promise<{
+            id: any;
+            username: any;
+        }>;
     };
 };
