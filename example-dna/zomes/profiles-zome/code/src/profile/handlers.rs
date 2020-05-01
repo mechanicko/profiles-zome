@@ -50,7 +50,7 @@ pub fn create_profile(username: String) -> ZomeApiResult<Profile> {
 
             let profile_address = hdk::commit_entry(&new_profile.clone().entry())?;
 
-            hdk::commit_entry(&username_entry)?;
+            hdk::commit_entry(&username_entry.clone())?;
 
             hdk::link_entries(
                 &AGENT_ADDRESS,                             // base
