@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use crate::profile::{BooleanReturn, HashedEmail, Profile};
+use crate::profile::{BooleanReturn, Profile};
 use hdk::{
     entry_definition::ValidatingEntryType, error::ZomeApiResult,
     holochain_persistence_api::cas::content::Address,
@@ -18,7 +18,6 @@ pub mod username;
 // Crate              Modules
 // profile __________ mod
 //            |______ handlers
-//            |______ validation
 //            |______ strings
 
 #[zome]
@@ -33,8 +32,6 @@ mod profile_zome {
 
     #[validate_agent]
     pub fn validate_agent(validation_data: EntryValidationData<AgentId>) {
-        // this is where you can actually have some validations for agents who want to join this network.
-        // Since this is a public DHT wehere anyone can join, we might not have much of validation here. Let's see.
         Ok(())
     }
 
@@ -42,11 +39,6 @@ mod profile_zome {
     #[entry_def]
     fn profile_def() -> ValidatingEntryType {
         profile::profile_definition()
-    }
-
-    #[entry_def]
-    fn hashed_email_def() -> ValidatingEntryType {
-        profile::hashed_email_definition()
     }
 
     #[entry_def]
@@ -60,26 +52,12 @@ mod profile_zome {
     }
 
     // FRONTEND FUNCTIONS
-    #[zome_fn("hc_public")]
-    fn is_email_registered(email: String) -> ZomeApiResult<BooleanReturn> {
-        let result = profile::handlers::check_email(email)?;
-        Ok(BooleanReturn { value: result })
-    }
-
-    #[zome_fn("hc_public")]
-    fn is_username_registered(username: String) -> ZomeApiResult<BooleanReturn> {
-        let result = profile::handlers::check_username(username)?;
-        Ok(BooleanReturn { value: result })
-    }
 
     #[zome_fn("hc_public")]
     fn create_profile(
         username: String,
-        first_name: String,
-        last_name: String,
-        email: String,
     ) -> ZomeApiResult<Profile> {
-        profile::handlers::create_profile(username, first_name, last_name, email)
+        profile::handlers::create_profile(username)
     }
 
     /** Temporary Guillem solution **/
@@ -92,12 +70,12 @@ mod profile_zome {
 
     #[zome_fn("hc_public")]
     fn get_all_agents() -> ZomeApiResult<Vec<Username>> {
-        username_mod::get_all_agents()
+        profile::handlers::get_all_agents()
     }
 
     #[zome_fn("hc_public")]
     fn get_username(agent_address: Address) -> ZomeApiResult<Option<String>> {
-        username_mod::get_username(agent_address)
+        profile::handlers::get_username(agent_address)
     }
 
     #[zome_fn("hc_public")]

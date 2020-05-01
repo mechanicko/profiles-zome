@@ -2,29 +2,15 @@
 #![allow(unused_imports)]
 
 use hdk::{
-    error::ZomeApiResult,
-    // holochain_core_types::{
-    //     entry::Entry,
-    // },
-    holochain_persistence_api::cas::content::{
-        Address,
-    },
     prelude::*,
-    AGENT_ADDRESS
+    api::AGENT_ADDRESS,
 };
 use holochain_anchors::anchor;
 use crate::profile::{
     Profile,
     Username,
-    HashedEmail,
-    Email,
 };
 use crate::profile::strings::*; 
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{
-    Hash, 
-    Hasher
-};
 
 
 // HANDLER MODULE UNDER THE PROFILE CRATE
@@ -34,136 +20,110 @@ use std::hash::{
 // anchor format: 
 //      anchor type: 'USERNAME_ANCHOR_<first character of username>'
 //      anchor text: 'USERNAMES_<first character of username>'
-fn anchor_username(anchor_type: String, anchor_text: String, username: String) -> ZomeApiResult<Address> {
-    let first_letter = username.chars().next().unwrap().to_ascii_lowercase();
-    let type_string = format!("{}{}{}", anchor_type, "_", first_letter);
-    let text_string = format!("{}{}{}", anchor_text, "_", first_letter);
-    anchor(type_string.to_string(), text_string.to_string())
-}
-fn anchor_hashed_email(anchor_type: String, anchor_text: String) -> ZomeApiResult<Address> {
-    anchor(anchor_type.to_string(), anchor_text.to_string())
-}
+// fn anchor_username(anchor_type: String, anchor_text: String, username: String) -> ZomeApiResult<Address> {
+//     let first_letter = username.chars().next().unwrap().to_ascii_lowercase();
+//     let type_string = format!("{}{}{}", anchor_type, "_", first_letter);
+//     let text_string = format!("{}{}{}", anchor_text, "_", first_letter);
+//     anchor(type_string.to_string(), text_string.to_string())
+// }
 
-pub fn calculate_hash<T: Hash>(t: &T) -> u64 {
-    let mut s = DefaultHasher::new();
-    t.hash(&mut s);
-    s.finish()
-}
-
-pub fn compare_hashes (hash: u64) -> ZomeApiResult<bool> {
-    let matches = hdk::get_links(
-        &anchor_hashed_email(
-            HASHED_EMAIL_ANCHOR_TYPE.to_string(),
-            HASHED_EMAIL_ANCHOR_TEXT.to_string(),
-        )?,
-        LinkMatch::Exactly(HASHED_EMAIL_LINK_TYPE),
-        LinkMatch::Any
-    )?.addresses().into_iter();
-    let mut result = false;
-    for address in matches {
-        let entry = get_hashed_email(address)?;
-        if entry.email_hash == hash {
-            result = true;
-            break;
-        } else {
-            ()
-        }
-    };
-    Ok(result)
-}
-
-pub fn check_email (email: String) -> ZomeApiResult<bool> {
-    let input_email = Email::new(email);
-    let input_email_hash = calculate_hash(&input_email);
-    compare_hashes(input_email_hash)
-}
-
-// check_username()
-// argument(s): username
-// return value: bool
-pub fn check_username(username: String) -> ZomeApiResult<bool> {
-    let username_checker = hdk::get_links(
-        &anchor_username(
-            USERNAME_ANCHOR_TYPE.to_string(), 
-            USERNAMES_ANCHOR_TEXT.to_string(),
-            username.clone()
-        )?, 
-        LinkMatch::Exactly(USERNAME_LINK_TYPE), 
-        LinkMatch::Exactly(&username)
-    )?.addresses().is_empty();
-    let mut result = false;
-    if username_checker == false {
-        result = true;
-    }
-    Ok(result)
-}
-
-pub fn create_profile(
-    username: String,
-    first_name: String,
-    last_name: String,
-    email: String
-) -> ZomeApiResult<Profile> {
-    let new_email = Email::new(email);
-    let new_email_hash = calculate_hash(&new_email);
-    let new_hashed_email_entry  = HashedEmail::new(new_email_hash.clone()).entry();
-    let new_hashed_email_address  = hdk::commit_entry(&new_hashed_email_entry)?;
-
-    hdk::link_entries(
-        &AGENT_ADDRESS,                                 // base
-        &new_hashed_email_address,                      // target
-        AGENT_HASHED_EMAIL_LINK_TYPE,                   // link_type
-        "hashed_email"                                  // tag
-    )?;
-
-    hdk::link_entries(
-        &anchor_hashed_email(
-            HASHED_EMAIL_ANCHOR_TYPE.to_string(),
-            HASHED_EMAIL_ANCHOR_TEXT.to_string()
-        )?, 
-        &new_hashed_email_address,                                       
-        HASHED_EMAIL_LINK_TYPE,                         
-        &new_email_hash.to_string()                        
-    )?;
-
+pub fn create_profile(username: String) -> ZomeApiResult<Profile> {
     let new_username = Username::new(username.clone());
-    let new_username_entry = new_username.clone().entry();
-    let new_username_address = hdk::commit_entry(&new_username_entry)?;
+    let new_profile = Profile::new(new_username.clone());
+    let username_entry = new_username.entry();
+    let username_address = username_entry.address();
 
-    hdk::link_entries(
-        &AGENT_ADDRESS,                             // base
-        &new_username_address,                      // target
-        AGENT_USERNAME_LINK_TYPE,                   // link_type
-        "username"                                  // tag
+    let links_result = hdk::get_links(
+        &AGENT_ADDRESS,
+        LinkMatch::Exactly(AGENT_USERNAME_LINK_TYPE),
+        LinkMatch::Exactly("username"),
     )?;
 
-    hdk::link_entries(
-        &anchor_username(
-            USERNAME_ANCHOR_TYPE.to_string(),
-            USERNAMES_ANCHOR_TEXT.to_string(),
-            username.clone().to_ascii_lowercase()     // <username input> to concatenate to anchor type and text
-        )?,  
-        &new_username_address,                                       
-        USERNAME_LINK_TYPE,                         
-        &username.to_ascii_lowercase()                      
-    )?;
+    // check if the agent committing the username have committed a username before
+    // return error if the agent already has a username
+    if let 0 = links_result.links().len() {
+        // check if there is a committed entry with given username
+        // If none then commit the profile first to ensure other agent is not committing
+        // a username on behalf of other agent then commit the username.
+        // If username exist, throw an error
+        if let Ok(None) = hdk::get_entry(&username_address) {
 
-    let new_profile = Profile::new(new_username, first_name, last_name);
-    let profile_address = hdk::commit_entry(&new_profile.clone().entry())?;
-    hdk::link_entries(
-        &new_username_address, 
-        &profile_address,                                   // profile_address of the entry in the dht
-        USERNAME_PROFILE_LINK_TYPE,                         // USERNAME->PROFILE
-        "",
-    )?;
+            let profile_address = hdk::commit_entry(&new_profile.clone().entry())?;
 
-    hdk::link_entries(
-        &AGENT_ADDRESS,                                     // base
-        &profile_address,                                   // target
-        AGENT_PROFILE_LINK_TYPE,                            // link_type
-        "profile"                                    // tag
-    )?;
+            hdk::commit_entry(&username_entry)?;
+
+            hdk::link_entries(
+                &AGENT_ADDRESS,                             // base
+                &username_address,                          // target
+                AGENT_USERNAME_LINK_TYPE,                   // link_type
+                "username"                                  // tag
+            )?;
+            // This anchor will create a hotspot for now. Can be improved on later.
+            let username_anchor = holochain_anchors::anchor(USERNAME_ANCHOR_TYPE.into(), USERNAMES_ANCHOR_TEXT.into())?;
+            hdk::link_entries(
+                &username_anchor,  
+                &username_address,                                       
+                USERNAME_LINK_TYPE,                         
+                &username.to_ascii_lowercase()                      
+            )?;
+
+            hdk::link_entries(
+                &username_address, 
+                &profile_address,                                   // profile_address of the entry in the dht
+                USERNAME_PROFILE_LINK_TYPE,                         // USERNAME->PROFILE
+                "",
+            )?;
+        
+            hdk::link_entries(
+                &AGENT_ADDRESS,                                     // base
+                &profile_address,                                   // target
+                AGENT_PROFILE_LINK_TYPE,                            // link_type
+                "profile"                                           // tag
+            )?;
+
+        } else {
+            return Err(ZomeApiError::from(String::from(
+                "This username is already existing",
+            )))
+        }
+    } else {
+        return Err(ZomeApiError::from(String::from(
+            "This agent already has a username",
+        )))
+    }
     Ok(new_profile)
+}
+
+pub fn get_all_agents() -> ZomeApiResult<Vec<Username>> {
+    let username_anchor = holochain_anchors::anchor(USERNAME_ANCHOR_TYPE.into(), USERNAMES_ANCHOR_TEXT.into())?;
+
+    hdk::utils::get_links_and_load_type(
+        &username_anchor,
+        LinkMatch::Exactly(USERNAME_LINK_TYPE),
+        LinkMatch::Any,
+    )
+}
+
+pub fn get_username(agent_address: Address) -> ZomeApiResult<Option<String>> {
+    let links_result = hdk::get_links(
+        &agent_address,
+        LinkMatch::Exactly(AGENT_USERNAME_LINK_TYPE),
+        LinkMatch::Any,
+    )?;
+
+    match links_result.links().len() {
+        0 => Ok(None),
+        1 => {
+            let username_address = links_result.addresses()[0].clone();
+
+            let username: Username = hdk::utils::get_as_type(username_address)?;
+
+            Ok(Some(username.username))
+        }
+        _ => Err(ZomeApiError::from(String::from(
+            "Agent has more than one username registered",
+        ))),
+    }
 }
 
 // get_profile()
@@ -182,10 +142,6 @@ pub fn get_my_profile() -> ZomeApiResult<Vec<Profile>> {
     )?.addresses().into_iter().map(|profile_address| {
         get_profile(profile_address)
     }).collect()
-}
-
-fn get_hashed_email(id: Address) -> ZomeApiResult<HashedEmail> {
-    hdk::utils::get_as_type(id)
 }
 
 // list_public_profiles()
