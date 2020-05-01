@@ -25,9 +25,11 @@ export const resolvers = {
   },
   Agent: {
     id(parent) {
-      return parent;
+      return parent.id ? parent.id : parent;
     },
     username(parent, _, { container }) {
+      if (parent.username) return parent.username;
+
       const profilesProvider: HolochainProvider = container.get(
         ProfilesBindings.ProfilesProvider
       );
