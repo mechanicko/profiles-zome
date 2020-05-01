@@ -67,6 +67,13 @@ orchestrator.registerScenario("description of example test", async (s, t) => {
 
   result = await getAllAgents()(bob);
   t.equal(result.Ok.length, 1);
+
+  result = await setUsername("bob")(bob);
+  t.ok(result.Ok);
+  await s.consistency();
+
+  result = await getAllAgents()(alice);
+  t.equal(result.Ok.length, 2);
 });
 
 orchestrator.run();
