@@ -108,7 +108,7 @@ pub fn get_username(agent_address: Address) -> ZomeApiResult<Option<String>> {
     let links_result = hdk::get_links(
         &agent_address,
         LinkMatch::Exactly(AGENT_USERNAME_LINK_TYPE),
-        LinkMatch::Any,
+        LinkMatch::Exactly("username"),
     )?;
 
     match links_result.links().len() {
