@@ -27,10 +27,6 @@ module.exports = (scenario, conductorConfig) => {
     t.deepEqual(invalid_create_profile_result_alice.Err, {"Internal":"This agent already has a username"})
     t.deepEqual(invalid_create_profile_result_bob.Err, {"Internal":"This username is already existing"})
     t.ok(create_profile_result_bob.Ok)
-    console.log(create_profile_result_alice)
-    console.log(invalid_create_profile_result_alice)
-    console.log(invalid_create_profile_result_bob)
-    console.log(create_profile_result_bob)
   })
 
   scenario("get_profile", async (s, t) => {
