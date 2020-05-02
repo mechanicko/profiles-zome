@@ -13,7 +13,7 @@ pub mod profile;
 pub mod username;
 
 // MAIN FILE FOR THE PROFILE ZOME
-// contains calls to entry definitions and functions
+// contains calls to entry definitions and functions.
 
 // Crate              Modules
 // profile __________ mod

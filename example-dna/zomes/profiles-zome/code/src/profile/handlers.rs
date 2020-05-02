@@ -40,7 +40,7 @@ pub fn create_profile(username: String) -> ZomeApiResult<Profile> {
     )?;
 
     // check if the agent committing the username have committed a username before
-    // return error if the agent already has a username
+    // return error if the agent already has a username.
     if let 0 = links_result.links().len() {
         // check if there is a committed entry with given username
         // If none then commit the profile first to ensure other agent is not committing
@@ -80,7 +80,7 @@ pub fn create_profile(username: String) -> ZomeApiResult<Profile> {
                 AGENT_PROFILE_LINK_TYPE,                            // link_type
                 "profile"                                           // tag
             )?;
-
+            Ok(new_profile)
         } else {
             return Err(ZomeApiError::from(String::from(
                 "This username is already existing",
@@ -91,7 +91,6 @@ pub fn create_profile(username: String) -> ZomeApiResult<Profile> {
             "This agent already has a username",
         )))
     }
-    Ok(new_profile)
 }
 
 pub fn get_all_agents() -> ZomeApiResult<Vec<Username>> {
