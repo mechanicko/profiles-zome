@@ -3,8 +3,8 @@ module.exports = (scenario, conductorConfig) => {
     // TATS: this first line is just a boiler plate then sa string you can just specify what scenario you are creating 
   scenario("create_profile", async (s, t) => {
     const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
-    const create_profile_result_alice　= await alice.call("example_dna", "profiles-zome", "create_profile", {"username":"aLiCeGiRl"})
-    const create_profile_result_bob = await bob.call("example_dna", "profiles-zome", "create_profile", {"username":"Alexander"})
+    const create_profile_result_alice　= await alice.call("example_dna", "profiles", "create_profile", {"username":"aLiCeGiRl"})
+    const create_profile_result_bob = await bob.call("example_dna", "profiles", "create_profile", {"username":"Alexander"})
     await s.consistency()
     // TATS: check if all calls above returns Ok from rust
     await s.consistency()
@@ -14,14 +14,14 @@ module.exports = (scenario, conductorConfig) => {
 
   scenario("validate_create_profile", async (s, t) => {
     const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
-    const create_profile_result_alice = await alice.call("example_dna", "profiles-zome", "create_profile", {"username":"alice123"})
+    const create_profile_result_alice = await alice.call("example_dna", "profiles", "create_profile", {"username":"alice123"})
     await s.consistency()
     // committing the profile entry for the second time for the same agent
-    const invalid_create_profile_result_alice = await alice.call("example_dna", "profiles-zome", "create_profile", {"username":"alice1234"})
+    const invalid_create_profile_result_alice = await alice.call("example_dna", "profiles", "create_profile", {"username":"alice1234"})
     // committing a non-unique username
-    const invalid_create_profile_result_bob = await bob.call("example_dna", "profiles-zome", "create_profile", {"username":"alice123"})
+    const invalid_create_profile_result_bob = await bob.call("example_dna", "profiles", "create_profile", {"username":"alice123"})
     await s.consistency()
-    const create_profile_result_bob = await bob.call("example_dna", "profiles-zome", "create_profile", {"username":"alice1234"})
+    const create_profile_result_bob = await bob.call("example_dna", "profiles", "create_profile", {"username":"alice1234"})
     await s.consistency()
     t.ok(create_profile_result_alice.Ok)
     t.deepEqual(invalid_create_profile_result_alice.Err, {"Internal":"This agent already has a username"})
@@ -35,14 +35,14 @@ module.exports = (scenario, conductorConfig) => {
 
   scenario("get_profile", async (s, t) => {
     const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
-    const create_profile_result_alice　= await alice.call("example_dna", "profiles-zome", "create_profile", {"username":"alice123"})
+    const create_profile_result_alice　= await alice.call("example_dna", "profiles", "create_profile", {"username":"alice123"})
     await s.consistency()
-    const invalid_create_profile_result_alice = await alice.call("example_dna", "profiles-zome", "create_profile", {"username":"alice1234"})
-    const invalid_create_profile_result_bob = await bob.call("example_dna", "profiles-zome", "create_profile", {"username":"alice123"})
+    const invalid_create_profile_result_alice = await alice.call("example_dna", "profiles", "create_profile", {"username":"alice1234"})
+    const invalid_create_profile_result_bob = await bob.call("example_dna", "profiles", "create_profile", {"username":"alice123"})
     await s.consistency()
-    const get_all_agents_result = await alice.call("example_dna", "profiles-zome", "get_all_agents", {})
-    const get_my_address_result = await alice.call("example_dna", "profiles-zome", "get_my_address", {})
-    const get_username_alice_result = await alice.call("example_dna", "profiles-zome", "get_username", {"agent_address": get_my_address_result.Ok})
+    const get_all_agents_result = await alice.call("example_dna", "profiles", "get_all_agents", {})
+    const get_my_address_result = await alice.call("example_dna", "profiles", "get_my_address", {})
+    const get_username_alice_result = await alice.call("example_dna", "profiles", "get_username", {"agent_address": get_my_address_result.Ok})
     t.deepEqual(get_all_agents_result.Ok.length, 1)
     t.deepEqual(get_username_alice_result.Ok, "alice123")
   })
