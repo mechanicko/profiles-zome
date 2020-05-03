@@ -3,135 +3,45 @@ module.exports = (scenario, conductorConfig) => {
     // TATS: this first line is just a boiler plate then sa string you can just specify what scenario you are creating 
   scenario("create_profile", async (s, t) => {
     const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
-    const create_profile_result_alice　= await alice.call("example_dna", "profiles-zome", "create_profile", {"username":"aLiCeGiRl"})
-    const create_profile_result_bob = await bob.call("example_dna", "profiles-zome", "create_profile", {"username":"Alexander"})
+    const create_profile_result_alice　= await alice.call("example_dna", "profiles", "create_profile", {"username":"aLiCeGiRl"})
+    const create_profile_result_bob = await bob.call("example_dna", "profiles", "create_profile", {"username":"Alexander"})
     await s.consistency()
-    const create_profile_result_alice2　= await alice.call("example_dna", "profiles-zome", "create_profile", {"username":"test"})
-
     // TATS: check if all calls above returns Ok from rust
     await s.consistency()
     t.deepEqual(create_profile_result_bob.Ok.username, "Alexander")
     t.ok(create_profile_result_alice.Ok)
-    console.log(create_profile_result_alice2)
   })
 
-//   scenario("validate_create_profile", async (s, t) => {
-//     const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
-//     const create_private_profile_result_alice = await alice.call("kizuna_dna", "profile", "create_private_profile", {"input" : {
-//         "first_name":"alice",
-//         "last_name":"test",
-//         "email":"abc@abc.com"
-//     }})
-//     await s.consistency()
-//     // second commit on private profile which should return Err
-//     const invalid_create_private_profile_result_alice = await alice.call("kizuna_dna", "profile", "create_private_profile", {"input" : {
-//         "first_name":"haha",
-//         "last_name":"hahaha",
-//         "email":"hahaha@haha.com"
-//     }})
-//     // non-unique email
-//     const email_invalid_create_private_profile_result_bob = await bob.call("kizuna_dna", "profile", "create_private_profile", {"input" : {
-//         "first_name":"bob",
-//         "last_name":"test",
-//         "email":"abc@abc.com"
-//     }})
-//     const create_public_profile_result_alice = await alice.call("kizuna_dna", "profile", "create_public_profile", {"input" : {
-//         "username":"aLiCeGiRl"
-//     }})
-//     await s.consistency()
-//     // second commit on public profile which should return Err
-//     const invalid_create_public_profile_result_alice = await alice.call("kizuna_dna", "profile", "create_public_profile", {"input" : {
-//         "username":"abababa"
-//     }})
-//     // committing public profile before committing private profile
-//     const invalid_create_public_profile_result_bob = await bob.call("kizuna_dna", "profile", "create_public_profile", {"input" : {
-//         "username":"test"
-//     }})
-//     const create_private_profile_result_bob = await bob.call("kizuna_dna", "profile", "create_private_profile", {"input" : {
-//     "first_name":"bob",
-//     "last_name":"marley",
-//     "email":"okay@abc.com"
-//     }})
-//     await s.consistency()
-//     // non-unique username
-//     const username_invalid_create_public_profile_result_bob = await bob.call("kizuna_dna", "profile", "create_public_profile", {"input" : {
-//         "username":"aLiCeGiRl"
-//     }})
-//     await s.consistency()
-//     t.ok(create_private_profile_result_alice.Ok)
-//     let err_1 = JSON.parse(invalid_create_private_profile_result_alice.Err.Internal)
-//     let err_2 = JSON.parse(email_invalid_create_private_profile_result_bob.Err.Internal)
-//     t.deepEqual(err_1.kind, {"ValidationFailed":"This agent already has a private profile"})
-//     t.deepEqual(err_2.kind, {"ValidationFailed":"Email is already registered"})
-//     t.ok(create_public_profile_result_alice.Ok)
-//     let err_3 = JSON.parse(invalid_create_public_profile_result_alice.Err.Internal)
-//     let err_4 = JSON.parse(invalid_create_public_profile_result_bob.Err.Internal)
-//     t.deepEqual(err_3.kind, {"ValidationFailed":"This agent already has a public profile"})
-//     t.deepEqual(err_4.kind, {"ValidationFailed":"A private profile for this user does not exist yet."})
-//     t.ok(create_private_profile_result_bob.Ok)
-//     let err_5 = JSON.parse(username_invalid_create_public_profile_result_bob.Err.Internal)
-//     t.deepEqual(err_5.kind, {"ValidationFailed":"Username is already registered"})
-//   })
+  scenario("validate_create_profile", async (s, t) => {
+    const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
+    const create_profile_result_alice = await alice.call("example_dna", "profiles", "create_profile", {"username":"alice123"})
+    await s.consistency()
+    // committing the profile entry for the second time for the same agent
+    const invalid_create_profile_result_alice = await alice.call("example_dna", "profiles", "create_profile", {"username":"alice1234"})
+    // committing a non-unique username
+    const invalid_create_profile_result_bob = await bob.call("example_dna", "profiles", "create_profile", {"username":"alice123"})
+    await s.consistency()
+    const create_profile_result_bob = await bob.call("example_dna", "profiles", "create_profile", {"username":"alice1234"})
+    await s.consistency()
+    t.ok(create_profile_result_alice.Ok)
+    t.deepEqual(invalid_create_profile_result_alice.Err, {"Internal":"This agent already has a username"})
+    t.deepEqual(invalid_create_profile_result_bob.Err, {"Internal":"This username is already existing"})
+    t.ok(create_profile_result_bob.Ok)
+  })
 
-  // scenario("is_username_registered", async (s, t) => {
-  //   const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
-  //   await alice.call("kizuna_dna", "profile", "create_private_profile", {"input" : {
-  //     "first_name":"alice",
-  //     "last_name":"test",
-  //     "email":"abc@abc.com"
-  //   }})
-  //   await s.consistency()
-  //   const create_public_profile_result_alice = await alice.call("kizuna_dna", "profile", "create_public_profile", {"input" : {
-  //       "username":"aLiCeGiRl"
-  //   }})
-  //   await s.consistency() 
-  //   const is_username_registered_result = await bob.call("kizuna_dna", "profile", "is_username_registered", {"username": "ALicegirl"})
-  //   const is_username_registered_result_none = await alice.call("kizuna_dna", "profile", "is_username_registered", {"username": "bobaba"})
-  //   await s.consistency() 
-  //   t.deepEqual(is_username_registered_result, {Ok: { value: true}})
-  //   t.deepEqual(is_username_registered_result_none, {Ok: { value: false}})
-  //   console.log(create_public_profile_result_alice)
-  // })
-
-  // scenario("is_email_registered", async (s, t) => {
-  //   const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
-  //   await alice.call("kizuna_dna", "profile", "create_private_profile", {"input" : {
-  //       "first_name":"alice",
-  //       "last_name":"test",
-  //       "email":"abc@abc.com"
-  //   }})
-  //   await bob.call("kizuna_dna", "profile", "create_private_profile", {"input" : {
-  //       "first_name":"bob",
-  //       "last_name":"test",
-  //       "email":"abcabc@abc.com"
-  //   }})
-  //   await s.consistency() 
-  //   const is_email_registered_result = await bob.call("kizuna_dna", "profile", "is_email_registered", {"email": "abc@abc.com"})
-  //   const is_email_registered_result_none = await alice.call("kizuna_dna", "profile", "is_email_registered", {"email": "test@test.com"})
-  //   await s.consistency()
-  //   t.deepEqual(is_email_registered_result, {Ok: { value: true}})
-  //   t.deepEqual(is_email_registered_result_none, {Ok: { value: false}})
-  // })
-
-//   scenario("get_profile", async (s, t) => {
-//     const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
-//     const create_private_profile_result_bob = await bob.call("kizuna_dna", "profile", "create_private_profile", {"input" : {
-//         "first_name":"bob",
-//         "last_name":"test",
-//         "email":"abc@abc.com"
-//     }})
-//     const create_public_profile_result_bob = await bob.call("kizuna_dna", "profile", "create_public_profile", {"input" : {
-//         "username":"Alexander"
-//     }})
-//     await s.consistency()
-//     // TATS: now, let's try to get the entry content created with the result with bob and alice using get_public_profile/get_private_profile call
-//     // the public/private/profile_result__addr.Ok.id contains the address of the profile entry committed since create_pub/private_profile returns
-//     // a profile struct with its id field having the address of the committed entry. 
-//     const get_pub_profile_result = await alice.call("kizuna_dna", "profile", "get_public_profile", {"id": create_public_profile_result_bob.Ok.id})
-//     const get_private_profile_result = await alice.call("kizuna_dna", "profile", "get_private_profile", {"id": create_private_profile_result_bob.Ok.id})
-//     t.deepEqual(get_pub_profile_result, { Ok: { id: create_public_profile_result_bob.Ok.id, username: 'Alexander'} })
-//     t.deepEqual(get_private_profile_result, { Ok: { id: create_private_profile_result_bob.Ok.id, first_name: 'bob', last_name:'test', email:'abc@abc.com'} })
-//   })
+  scenario("get_profile", async (s, t) => {
+    const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
+    const create_profile_result_alice　= await alice.call("example_dna", "profiles", "create_profile", {"username":"alice123"})
+    await s.consistency()
+    const invalid_create_profile_result_alice = await alice.call("example_dna", "profiles", "create_profile", {"username":"alice1234"})
+    const invalid_create_profile_result_bob = await bob.call("example_dna", "profiles", "create_profile", {"username":"alice123"})
+    await s.consistency()
+    const get_all_agents_result = await alice.call("example_dna", "profiles", "get_all_agents", {})
+    const get_my_address_result = await alice.call("example_dna", "profiles", "get_my_address", {})
+    const get_username_alice_result = await alice.call("example_dna", "profiles", "get_username", {"agent_address": get_my_address_result.Ok})
+    t.deepEqual(get_all_agents_result.Ok.length, 1)
+    t.deepEqual(get_username_alice_result.Ok, "alice123")
+  })
 
 //   scenario("list_profiles", async (s, t) => {
 //     const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
