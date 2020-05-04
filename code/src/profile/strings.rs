@@ -1,20 +1,13 @@
 // CONSTANT STRINGS (to avoid typo)
 // Entry Names
 pub const PROFILE_ENTRY_NAME: &str = "PROFILE";
-pub const HASHED_EMAIL_ENTRY_NAME: &str = "HASHED_EMAIL";
 pub const USERNAME_ENTRY_NAME: &str = "USERNAME";
 // Link Types 
-pub const HASHED_EMAIL_LINK_TYPE: &str = "HASHED_EMAIL_LINK";
 pub const USERNAME_PROFILE_LINK_TYPE: &str = "USERNAME->PROFILE";
 pub const AGENT_PROFILE_LINK_TYPE: &str = "AGENT->PROFILE";
 pub const AGENT_USERNAME_LINK_TYPE: &str = "AGENT->USERNAME";
-pub const AGENT_HASHED_EMAIL_LINK_TYPE: &str = "AGENT->HASHED_EMAIL";
 pub const USERNAME_LINK_TYPE: &str = "ANCHOR->USERNAME";
 // Anchor Types
 pub const USERNAME_ANCHOR_TYPE: &str = "USERNAME_ANCHOR";
-pub const HASHED_EMAIL_ANCHOR_TYPE: &str = "HASHED_EMAIL_ANCHOR";
 // Anchor Text
 pub const USERNAMES_ANCHOR_TEXT: &str = "USERNAMES";
-pub const HASHED_EMAIL_ANCHOR_TEXT: &str = "HASHED_EMAILS";
-
-

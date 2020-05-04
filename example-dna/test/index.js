@@ -2,6 +2,8 @@
 /// See the tryorama README [https://github.com/holochain/tryorama]
 /// for a potentially more accurate example
 
+//  for less verbose test output. use TRYORAMA_LOG_LEVEL=error hc test -s
+
 const path = require("path");
 
 const {
@@ -75,5 +77,7 @@ orchestrator.registerScenario("description of example test", async (s, t) => {
   result = await getAllAgents()(alice);
   t.equal(result.Ok.length, 2);
 });
+
+require('./profiles')(orchestrator.registerScenario, conductorConfig)
 
 orchestrator.run();
