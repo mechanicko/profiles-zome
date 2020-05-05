@@ -43,23 +43,4 @@ pub fn validate_profile_create(entry: Profile, validation_data: hdk::ValidationD
   //   Err(e) => Err(format!("An error occurred. -> {}", e.to_string()))
   // }
   Ok(())
-}
 
-// pub fn validate_private_profile_create(entry: PrivateProfileEntry, validation_data: hdk::ValidationData) -> Result<(), String> {
-//   hdk::debug(format!("validate_entry_create_entry: {:?}", entry)).ok();
-//   hdk::debug(format!("validate_entry_create_validation_data: {:?}", validation_data)).ok();
-//   // Only 1 profile each agent
-//   if !get_my_private_profile()?.is_empty() {
-//     return Err("This agent already has a private profile".to_string())
-//   }
-//   // Email must be unique
-//   match check_email(entry.email) {
-//     Ok(t) => {
-//       match t {
-//         true => Err("Email is already registered".to_string()),
-//         false => Ok(())
-//       }
-//     },
-//     Err(e) => Err(format!("An error occurred. -> {}", e.to_string()))
-//   }
-// }

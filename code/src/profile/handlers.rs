@@ -27,6 +27,32 @@ use crate::profile::strings::*;
 //     anchor(type_string.to_string(), text_string.to_string())
 // }
 
+/** Temporary Guillem solution **/
+
+pub fn set_username(username: String) -> ZomeApiResult<()> {
+    let new_username = Username::new(username.clone());
+
+    let username_anchor = holochain_anchors::anchor(USERNAME_ANCHOR_TYPE.into(), USERNAMES_ANCHOR_TEXT.into())?;
+
+    let username_address = hdk::commit_entry(&new_username.entry())?;
+
+    hdk::link_entries(
+        &AGENT_ADDRESS,                             // base
+        &username_address,                          // target
+        AGENT_USERNAME_LINK_TYPE,                   // link_type
+        "username"                                  // tag
+    )?;
+
+    hdk::link_entries(
+        &username_anchor,  
+        &username_address,                                       
+        USERNAME_LINK_TYPE,                         
+        &username.to_ascii_lowercase()                      
+    )?;
+
+    Ok(())
+}
+
 pub fn create_profile(username: String) -> ZomeApiResult<Profile> {
     let new_username = Username::new(username.clone());
     let new_profile = Profile::new(new_username.clone());
