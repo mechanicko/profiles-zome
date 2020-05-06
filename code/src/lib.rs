@@ -10,7 +10,7 @@ use hdk::{
 use hdk_proc_macros::zome;
 use serde_derive::{Deserialize, Serialize};
 pub mod profile;
-pub mod username;
+use profile::Username;
 
 // MAIN FILE FOR THE PROFILE ZOME
 // contains calls to entry definitions and functions.
@@ -22,8 +22,6 @@ pub mod username;
 
 #[zome]
 mod profile_zome {
-
-    use crate::{profile::Username, username as username_mod};
 
     #[init]
     fn init() {
@@ -60,14 +58,6 @@ mod profile_zome {
         profile::handlers::create_profile(username)
     }
 
-    /** Temporary Guillem solution **/
-    #[zome_fn("hc_public")]
-    fn set_username(username: String) -> ZomeApiResult<Address> {
-        username_mod::set_username(username)?;
-
-        Ok(hdk::AGENT_ADDRESS.clone())
-    }
-
     #[zome_fn("hc_public")]
     fn get_all_agents() -> ZomeApiResult<Vec<Username>> {
         profile::handlers::get_all_agents()
@@ -84,8 +74,16 @@ mod profile_zome {
     }
 
     #[zome_fn("hc_public")]
-    fn get_my_profile() -> ZomeApiResult<Vec<Profile>> {
-        profile::handlers::get_my_profile()
+    fn get_profile(agent_address: Address) -> ZomeApiResult<Option<Profile>> {
+        profile::handlers::get_profile(agent_address)
+    }
+
+    /** Temporary Guillem solution **/
+    #[zome_fn("hc_public")]
+    fn set_username(username: String) -> ZomeApiResult<Address> {
+        profile::handlers::set_username(username)?;
+
+        Ok(hdk::AGENT_ADDRESS.clone())
     }
 
     #[zome_fn("hc_public")]

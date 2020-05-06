@@ -4,37 +4,80 @@
 
 //  for less verbose test output. use TRYORAMA_LOG_LEVEL=error hc test -s
 
-const path = require('path')
-const {  Orchestrator, Config, combine, localOnly, tapeExecutor } = require('@holochain/tryorama')
+const path = require("path");
 
-const dnaPath = path.join(__dirname, "../dist/example-dna.dna.json")
+const {
+  Orchestrator,
+  Config,
+  combine,
+  singleConductor,
+  localOnly,
+  tapeExecutor,
+} = require("@holochain/tryorama");
 
-// Instatiate a test orchestrator.
-// It comes loaded with a lot default behavior which can be overridden, including:
-const orchestrator = new Orchestrator({
-  middleware: combine(
-    // use the tape harness to run the tests, injects the tape API into each scenario
-    // as the second argument
-    tapeExecutor(require('tape')),
+process.on("unhandledRejection", (error) => {
+  // Will print "unhandledRejection err is not defined"
+  console.error("got unhandledRejection:", error);
+});
 
-    // specify that all "players" in the test are on the local machine, rather than
-    // on remote machines
-    localOnly,
-  )
-})
+const dnaPath = path.join(__dirname, "../dist/example-dna.dna.json");
 
-const dna = Config.dna(dnaPath, 'example_dna')
+const dna = Config.dna(dnaPath, "scaffold-test");
 const conductorConfig = Config.gen(
-  {
-    example_dna: dna
-  },
+  { profiles: dna },
   {
     network: {
-      type: 'sim2h',
-      sim2h_url: 'ws://localhost:9000',
+      type: "sim2h",
+      sim2h_url: "ws://localhost:9000",
     },
-  })
+  }
+);
+
+const orchestrator = new Orchestrator({
+  waiter: {
+    softTimeout: 20000,
+    hardTimeout: 30000,
+  },
+});
+
+function setUsername(username) {
+  return (caller) =>
+    caller.call("profiles", "profiles", "set_username", {
+      username,
+    });
+}
+
+function getAllAgents() {
+  return (caller) => caller.call("profiles", "profiles", "get_all_agents", {});
+}
+
+orchestrator.registerScenario("description of example test", async (s, t) => {
+  const { alice, bob } = await s.players(
+    { alice: conductorConfig, bob: conductorConfig },
+    true
+  );
+
+  const aliceAddress = alice.instance("profiles").agentAddress;
+  const bobAddress = bob.instance("profiles").agentAddress;
+
+  let result = await getAllAgents()(alice);
+  t.equal(result.Ok.length, 0);
+
+  result = await setUsername("alice")(alice);
+  t.ok(result.Ok);
+  await s.consistency();
+
+  result = await getAllAgents()(bob);
+  t.equal(result.Ok.length, 1);
+
+  result = await setUsername("bob")(bob);
+  t.ok(result.Ok);
+  await s.consistency();
+
+  result = await getAllAgents()(alice);
+  t.equal(result.Ok.length, 2);
+});
 
 require('./profiles')(orchestrator.registerScenario, conductorConfig)
 
-orchestrator.run()
+orchestrator.run();

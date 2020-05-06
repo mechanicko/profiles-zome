@@ -20,19 +20,22 @@ export const resolvers = {
         ProfilesBindings.ProfilesProvider
       );
 
-      return profilesProvider.call('get_my_address', {});
+      const address = await profilesProvider.call('get_my_address', {});
+      return { id: address };
     },
   },
   Agent: {
     id(parent) {
-      return parent;
+      return parent.id;
     },
     username(parent, _, { container }) {
       const profilesProvider: HolochainProvider = container.get(
         ProfilesBindings.ProfilesProvider
       );
 
-      return profilesProvider.call('get_username', { agent_address: parent });
+      return profilesProvider.call('get_username', {
+        agent_address: parent.id,
+      });
     },
   },
   Mutation: {
@@ -41,7 +44,11 @@ export const resolvers = {
         ProfilesBindings.ProfilesProvider
       );
 
-      return profilesProvider.call('set_username', { username });
+      const agentId = await profilesProvider.call('set_username', { username });
+      return {
+        id: agentId,
+        username,
+      };
     },
   },
 };
