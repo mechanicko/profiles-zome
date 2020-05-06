@@ -1,6 +1,6 @@
 module.exports = (scenario, conductorConfig) => {
-    Register a scenario, which is a function that gets a special API injected in
-    TATS: this first line is just a boiler plate then sa string you can just specify what scenario you are creating 
+    // Register a scenario, which is a function that gets a special API injected in
+    // TATS: this first line is just a boiler plate then sa string you can just specify what scenario you are creating 
   
     scenario("create_profile", async (s, t) => {
     const {alice, bob} = await s.players({alice: conductorConfig, bob: conductorConfig}, true)
