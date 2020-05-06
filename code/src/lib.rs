@@ -73,6 +73,11 @@ mod profile_zome {
         Ok(hdk::AGENT_ADDRESS.clone())
     }
 
+    #[zome_fn("hc_public")]
+    fn get_profile(agent_address: Address) -> ZomeApiResult<Option<Profile>> {
+        profile::handlers::get_profile(agent_address)
+    }
+
     /** Temporary Guillem solution **/
     #[zome_fn("hc_public")]
     fn set_username(username: String) -> ZomeApiResult<Address> {

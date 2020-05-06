@@ -155,18 +155,25 @@ pub fn get_username(agent_address: Address) -> ZomeApiResult<Option<String>> {
 // argument(s): Address
 // return value: Profile
 
-pub fn get_profile(id: Address) -> ZomeApiResult<Profile> {
-    hdk::utils::get_as_type(id)
-}
+pub fn get_profile(agent_address: Address) -> ZomeApiResult<Option<Profile>> {
+    let links_result = hdk::get_links(
+        &agent_address,
+        LinkMatch::Exactly(AGENT_PROFILE_LINK_TYPE),
+        LinkMatch::Exactly("profile"),
+    )?;
 
-pub fn get_my_profile() -> ZomeApiResult<Vec<Profile>> {
-    hdk::get_links(
-        &AGENT_ADDRESS, 
-        LinkMatch::Exactly(AGENT_PROFILE_LINK_TYPE), 
-        LinkMatch::Exactly("profile")
-    )?.addresses().into_iter().map(|profile_address| {
-        get_profile(profile_address)
-    }).collect()
+    match links_result.links().len() {
+        0 => Ok(None),
+        1 => {
+            let profile_address = links_result.addresses()[0].clone();
+
+            let profile: Profile = hdk::utils::get_as_type(profile_address)?;
+            Ok(Some(profile))
+        },
+        _ => Err(ZomeApiError::from(String::from(
+            "Agent has more than one profile registered",
+        ))),
+    }
 }
 
 // list_public_profiles()

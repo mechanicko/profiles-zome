@@ -39,8 +39,10 @@ module.exports = (scenario, conductorConfig) => {
     const get_all_agents_result = await alice.call("profiles", "profiles", "get_all_agents", {})
     const get_my_address_result = await alice.call("profiles", "profiles", "get_my_address", {})
     const get_username_alice_result = await alice.call("profiles", "profiles", "get_username", {"agent_address": get_my_address_result.Ok})
+    const get_profile_alice_result = await alice.call("profiles", "profiles", "get_profile", {"agent_address": get_my_address_result.Ok})
     t.deepEqual(get_all_agents_result.Ok.length, 1)
     t.deepEqual(get_username_alice_result.Ok, "alice123")
+    t.deepEqual(get_profile_alice_result.Ok, {"agent_id":get_my_address_result.Ok, "username": "alice123"})
   })
 
 //   scenario("list_profiles", async (s, t) => {
