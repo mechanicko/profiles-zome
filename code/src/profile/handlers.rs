@@ -78,13 +78,15 @@ pub fn create_profile(username: String) -> ZomeApiResult<Profile> {
 
             hdk::commit_entry(&username_entry.clone())?;
 
+            // Links username to agent's address
             hdk::link_entries(
                 &AGENT_ADDRESS,                             // base
                 &username_address,                          // target
                 AGENT_USERNAME_LINK_TYPE,                   // link_type
                 "username"                                  // tag
             )?;
-            // This anchor will create a hotspot for now. Can be improved on later.
+
+            // links username to general anchor USERNAME_ANCHOR
             let username_anchor = holochain_anchors::anchor(USERNAME_ANCHOR_TYPE.into(), USERNAMES_ANCHOR_TEXT.into())?;
             hdk::link_entries(
                 &username_anchor,  
@@ -93,13 +95,25 @@ pub fn create_profile(username: String) -> ZomeApiResult<Profile> {
                 &username.to_ascii_lowercase()                      
             )?;
 
+            // links username to specific anchor USERNAME_ANCHOR_<FIRST_CHARACTER>
+            let username_specific_anchor_text = format!("{}{}{}", USERNAMES_ANCHOR_TEXT.to_string(), "_", &username.to_ascii_lowercase());
+            let username_specific_anchor = holochain_anchors::anchor(USERNAME_ANCHOR_TYPE.into(), username_specific_anchor_text.into())?;
+            hdk::link_entries(
+                &username_specific_anchor,  
+                &username_address,                                       
+                USERNAME_LINK_TYPE,                         
+                &username.to_ascii_lowercase()                      
+            )?;
+
+            // links username to profile
             hdk::link_entries(
                 &username_address, 
                 &profile_address,                                   // profile_address of the entry in the dht
                 USERNAME_PROFILE_LINK_TYPE,                         // USERNAME->PROFILE
                 "",
             )?;
-        
+
+            // links agent's address to profile
             hdk::link_entries(
                 &AGENT_ADDRESS,                                     // base
                 &profile_address,                                   // target
